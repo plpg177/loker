@@ -30,8 +30,8 @@
 
 
 
-<input type="text" id="nik" placeholder="Masukkan NIK">
-<input type="text" id="nama" placeholder="Masukkan Nama">
+<input type="text" id="nik" placeholder="Masukkan NIK" onkeyup="cekNIK()">
+<input type="text" id="nama" placeholder="Nama otomatis" readonly>
 
 <button onclick="kirim()">KIRIM</button>
 
@@ -57,6 +57,18 @@ function kirim() {
     return;
   }
 
+function cekNIK() {
+  const nik = document.getElementById("nik").value;
+
+  if (nik.length < 3) return;
+
+  fetch(urlScript + "?nik=" + nik)
+    .then(res => res.text())
+    .then(nama => {
+      document.getElementById("nama").value = nama;
+    });
+}
+  
   fetch(urlScript, {
     method: "POST",
     body: JSON.stringify({
