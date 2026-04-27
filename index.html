@@ -29,10 +29,7 @@ const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
 const mode = params.get("mode") || "PINJAM";
 
-document.getElementById("info").innerText =
-  mode === "PINJAM"
-  ? "Pinjam loker: " + loker
-  : "Pengembalian loker";
+document.getElementById("info").innerText = "";
 
 // ===== CEK NIK =====
 function cekNIK() {
@@ -82,6 +79,8 @@ function proses() {
 
     document.getElementById("hasil").innerText =
       "✔ Loker " + res.loker + " berhasil " + res.mode;
+    document.getElementById("info").innerText =
+     "✔ Loker " + res.loker + " berhasil " + res.mode;
   });
 }
 </script>
