@@ -7,24 +7,22 @@
     body { font-family: Arial; text-align: center; padding: 20px; }
     input { padding: 10px; width: 90%; margin: 10px; }
     button { padding: 12px; width: 90%; margin: 5px; border: none; font-size: 16px; color: white; }
-    #pinjam { background: green; }
-    #kembali { background: orange; }
+    .btn { background: green; }
+    .kembali { background: orange; }
     .disable { background: gray !important; }
   </style>
 </head>
 <body>
 
 <h2>Peminjaman Loker</h2>
-  <h3 id="infoLoker"></h3>
 
+<h3 id="infoLoker"></h3>
 <h3 id="statusLoker"></h3>
 
 <input type="text" id="nik" placeholder="Masukkan NIK" onkeyup="cekNIK()">
 <input type="text" id="nama" placeholder="Nama otomatis" readonly>
 
-<br>
-
-<button id="pinjam" onclick="proses()">PROSES</button>
+<button id="btnProses" class="btn" onclick="proses()">PROSES</button>
 
 <h3 id="hasil"></h3>
 
@@ -33,43 +31,33 @@ const urlScript = "https://script.google.com/macros/s/AKfycbyqpkR-BVDDvUfKqcanfv
 
 // ambil parameter
 const params = new URLSearchParams(window.location.search);
-const loker = params.get("loker");
-const mode = params.get("mode") || "PINJAM";
+const loker = params.get("loker"); // ada saat PINJAM
+const mode = params.get("mode") || "PINJAM"; // default PINJAM
 
-  if (loker && mode === "PINJAM") {
-  document.getElementById("infoLoker").innerText =
-    "Anda akan meminjam loker " + loker;
-}
+const btn = document.getElementById("btnProses");
 
-// ubah tampilan tombol sesuai mode
-const btn = document.getElementById("pinjam");
-
+// ubah tombol kalau mode kembali
 if (mode === "KEMBALI") {
   btn.innerText = "KEMBALIKAN";
-  btn.style.background = "orange";
+  btn.classList.remove("btn");
+  btn.classList.add("kembali");
 }
 
 // =====================
-// LOAD STATUS LOKER (hanya untuk PINJAM)
+// LOAD STATUS (hanya PINJAM)
 // =====================
 function loadStatus() {
-  if (!loker) return;
+  if (!loker || mode !== "PINJAM") return;
 
   fetch(urlScript + "?action=cekloker&loker=" + loker)
     .then(res => res.text())
     .then(status => {
       document.getElementById("statusLoker").innerText =
-        "Status Loker: " + status;
+        "Status: " + status;
 
-      // hanya berlaku di mode PINJAM
-      if (mode === "PINJAM") {
-        if (status === "PINJAM") {
-          btn.disabled = true;
-          btn.classList.add("disable");
-        } else {
-          btn.disabled = false;
-          btn.classList.remove("disable");
-        }
+      if (status === "PINJAM") {
+        btn.disabled = true;
+        btn.classList.add("disable");
       }
     });
 }
@@ -92,7 +80,7 @@ function cekNIK() {
 }
 
 // =====================
-// PROSES (PINJAM / KEMBALI)
+// PROSES
 // =====================
 function proses() {
   const nik = document.getElementById("nik").value;
@@ -108,36 +96,35 @@ function proses() {
     body: JSON.stringify({
       nik: nik,
       nama: nama,
-      loker: loker, // kosong saat mode kembali global
+      loker: loker, // kosong saat KEMBALI global
       status: mode
     })
   })
   .then(res => res.text())
   .then(res => {
 
-    if (res === "ERROR:TIDAK_ADA_PINJAMAN") {
-      alert("Anda tidak memiliki loker yang dipinjam!");
+    // HANDLE ERROR
+    if (res.startsWith("ERROR")) {
+      alert(res);
       return;
     }
 
-    if (res === "ERROR:BUKAN_PEMINJAM") {
-      alert("Bukan peminjam!");
-      return;
-    }
-
-    if (res === "ERROR:LOKER_DIPAKAI") {
-      alert("Loker sedang dipakai!");
-      return;
-    }
-
-    if (res === "ERROR:BELUM_DIPINJAM") {
-      alert("Loker belum dipinjam!");
-      return;
-    }
-
+    // tampilkan hasil utama
     document.getElementById("hasil").innerText =
       "Berhasil " + mode;
 
+    // 🔥 tampilkan nomor loker HANYA setelah sukses
+    if (mode === "PINJAM" && loker) {
+      document.getElementById("infoLoker").innerText =
+        "✔ Loker " + loker + " berhasil dipinjam";
+    }
+
+    if (mode === "KEMBALI") {
+      document.getElementById("infoLoker").innerText =
+        "✔ Pengembalian berhasil";
+    }
+
+    // reset form
     document.getElementById("nik").value = "";
     document.getElementById("nama").value = "";
 
