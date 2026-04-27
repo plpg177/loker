@@ -48,10 +48,13 @@ if (mode === "KEMBALI") {
 // =====================
 function loadStatus() {
   if (!loker || mode !== "PINJAM") return;
-
+if (res.status !== "OK") {
+  alert(res);
+  return;
+}
   fetch(urlScript + "?action=cekloker&loker=" + loker)
-    .then(res => res.text())
-    .then(status => {
+  .then(res => res.json())
+.then(res => {
       document.getElementById("statusLoker").innerText =
         "Status: " + status;
 
@@ -119,9 +122,10 @@ function proses() {
         "✔ Loker " + loker + " berhasil dipinjam";
     }
 
-    if (mode === "KEMBALI") {
-      document.getElementById("infoLoker").innerText =
-        "✔ Pengembalian berhasil";
+if (mode === "KEMBALI") {
+  document.getElementById("infoLoker").innerText =
+    "✔ Loker " + res.loker + " berhasil dikembalikan";
+}
     }
 
     // reset form
