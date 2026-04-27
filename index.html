@@ -35,6 +35,11 @@ const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
 const mode = params.get("mode") || "PINJAM";
 
+  if (loker && mode === "PINJAM") {
+  document.getElementById("infoLoker").innerText =
+    "Anda akan meminjam loker " + loker;
+}
+
 // ubah tampilan tombol sesuai mode
 const btn = document.getElementById("pinjam");
 
