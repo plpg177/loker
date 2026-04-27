@@ -72,27 +72,35 @@ function proses() {
       status: mode
     })
   })
-  .then(res => res.json()) // 🔥 pakai JSON
+  .then(res => res.text()) // 🔥 ubah ke text dulu
   .then(res => {
 
-    if (res.status !== "OK") {
-      alert("Terjadi kesalahan");
+    console.log("RESPONSE:", res); // debug
+
+    let data;
+    try {
+      data = JSON.parse(res);
+    } catch (e) {
+      alert("Response error:\n" + res);
+      return;
+    }
+
+    if (data.status !== "OK") {
+      alert(data.message);
       return;
     }
 
     document.getElementById("hasil").innerText =
-      "Berhasil " + mode;
+      "Berhasil " + data.mode;
 
-    // PINJAM
-    if (mode === "PINJAM" && loker) {
+    if (data.mode === "PINJAM") {
       document.getElementById("infoLoker").innerText =
-        "✔ Loker " + loker + " berhasil dipinjam";
+        "✔ Loker " + data.loker + " berhasil dipinjam";
     }
 
-    // KEMBALI (ambil dari backend)
-    if (mode === "KEMBALI") {
+    if (data.mode === "KEMBALI") {
       document.getElementById("infoLoker").innerText =
-        "✔ Loker " + res.loker + " berhasil dikembalikan";
+        "✔ Loker " + data.loker + " berhasil dikembalikan";
     }
 
     document.getElementById("nik").value = "";
@@ -101,7 +109,6 @@ function proses() {
     loadStatus();
   });
 }
-
 // load awal
 loadStatus();
 </script>
