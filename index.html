@@ -4,97 +4,63 @@
   <title>Peminjaman Loker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-    input {
-      padding: 10px;
-      width: 90%;
-      margin: 10px;
-    }
-    button {
-      padding: 12px;
-      width: 95%;
-      background: green;
-      color: white;
-      border: none;
-      font-size: 16px;
-    }
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    input { padding: 10px; width: 90%; margin: 10px; }
+    button { padding: 12px; width: 45%; margin: 5px; border: none; font-size: 16px; color: white; }
+    #pinjam { background: green; }
+    #kembali { background: orange; }
+    .disable { background: gray !important; }
   </style>
 </head>
 <body>
 
 <h2>Peminjaman Loker</h2>
 
-<h3 id="info" style="display:none;"></h3>
+<h3 id="statusLoker"></h3>
 
 <input type="text" id="nik" placeholder="Masukkan NIK" onkeyup="cekNIK()">
 <input type="text" id="nama" placeholder="Nama otomatis" readonly>
 
-<button onclick="kirim()">KIRIM</button>
+<br>
+
+<button id="pinjam" onclick="proses('PINJAM')">PINJAM</button>
+<button id="kembali" onclick="proses('KEMBALI')">KEMBALI</button>
 
 <h3 id="hasil"></h3>
 
 <script>
-const urlScript = "https://script.google.com/macros/s/AKfycbzU-XyGs5XT7JuU5CTYehQwFr5Chk3vwENZNuEVNNbZKDsP6ftFGezRIZVCmIqfpBFX/exec";
+const urlScript = "https://script.google.com/macros/s/AKfycbyqpkR-BVDDvUfKqcanfvEkk_EKuxJ11vodjAD-bamBzCs6KrrGsueFgeanjR4GbWsQ/exec";
 
-// ambil parameter dari QR
+// ambil dari QR
 const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
-const mode = params.get("mode") || "PINJAM";
-
-// tampilkan info loker
-document.getElementById("info").innerText =
-  "Loker: " + loker + " (" + mode + ")";
 
 // =====================
-// KIRIM DATA
+// CEK STATUS LOKER SAAT LOAD
 // =====================
-function kirim() {
-  const nik = document.getElementById("nik").value;
-  const nama = document.getElementById("nama").value;
-
-  if (!nik) {
-    alert("NIK harus diisi!");
-    return;
-  }
-
-  if (!nama || nama === "Mencari...") {
-    alert("Tunggu, data masih diproses atau NIK tidak ditemukan!");
-    return;
-  }
-
-  // 🔴 CEK STATUS LOKER DULU
+function loadStatus() {
   fetch(urlScript + "?action=cekloker&loker=" + loker)
     .then(res => res.text())
     .then(status => {
+      document.getElementById("statusLoker").innerText =
+        "Status Loker: " + status;
+
+      const btnPinjam = document.getElementById("pinjam");
+      const btnKembali = document.getElementById("kembali");
 
       if (status === "PINJAM") {
-        alert("Loker sedang dipinjam! Tidak bisa dipinjam lagi.");
-        return;
+        btnPinjam.disabled = true;
+        btnPinjam.classList.add("disable");
+
+        btnKembali.disabled = false;
+        btnKembali.classList.remove("disable");
+      } else {
+        btnPinjam.disabled = false;
+        btnPinjam.classList.remove("disable");
+
+        btnKembali.disabled = true;
+        btnKembali.classList.add("disable");
       }
-
-      // ✅ kalau aman → kirim data
-      fetch(urlScript, {
-        method: "POST",
-        body: JSON.stringify({
-          nik: nik,
-          nama: nama,
-          loker: loker,
-          status: mode
-        })
-      })
-      .then(res => res.text())
-      .then(() => {
-        document.getElementById("hasil").innerText =
-          "Berhasil " + mode + " loker " + loker;
-
-        document.getElementById("nik").value = "";
-        document.getElementById("nama").value = "";
-      });
-
     });
 }
 
@@ -111,13 +77,45 @@ function cekNIK() {
   fetch(urlScript + "?action=ceknik&nik=" + nik)
     .then(res => res.text())
     .then(nama => {
-      if (nama.trim() === "") {
-        document.getElementById("nama").value = "";
-      } else {
-        document.getElementById("nama").value = nama;
-      }
+      document.getElementById("nama").value = nama;
     });
 }
+
+// =====================
+// PROSES PINJAM / KEMBALI
+// =====================
+function proses(mode) {
+  const nik = document.getElementById("nik").value;
+  const nama = document.getElementById("nama").value;
+
+  if (!nik || !nama || nama === "Mencari...") {
+    alert("Isi data dengan benar!");
+    return;
+  }
+
+  fetch(urlScript, {
+    method: "POST",
+    body: JSON.stringify({
+      nik: nik,
+      nama: nama,
+      loker: loker,
+      status: mode
+    })
+  })
+  .then(res => res.text())
+  .then(() => {
+    document.getElementById("hasil").innerText =
+      "Berhasil " + mode + " loker " + loker;
+
+    document.getElementById("nik").value = "";
+    document.getElementById("nama").value = "";
+
+    loadStatus(); // refresh status tombol
+  });
+}
+
+// load awal
+loadStatus();
 </script>
 
 </body>
