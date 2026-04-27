@@ -66,24 +66,36 @@ function kirim() {
     return;
   }
 
-  fetch(urlScript, {
-    method: "POST",
-    body: JSON.stringify({
-      nik: nik,
-      nama: nama,
-      loker: loker,
-      status: mode
-    })
-  })
-  .then(res => res.text())
-  .then(() => {
-    document.getElementById("hasil").innerText =
-      "Berhasil " + mode + " loker " + loker;
+  // 🔴 CEK STATUS LOKER DULU
+  fetch(urlScript + "?action=cekloker&loker=" + loker)
+    .then(res => res.text())
+    .then(status => {
 
-    // reset form
-    document.getElementById("nik").value = "";
-    document.getElementById("nama").value = "";
-  });
+      if (status === "PINJAM") {
+        alert("Loker sedang dipinjam! Tidak bisa dipinjam lagi.");
+        return;
+      }
+
+      // ✅ kalau aman → kirim data
+      fetch(urlScript, {
+        method: "POST",
+        body: JSON.stringify({
+          nik: nik,
+          nama: nama,
+          loker: loker,
+          status: mode
+        })
+      })
+      .then(res => res.text())
+      .then(() => {
+        document.getElementById("hasil").innerText =
+          "Berhasil " + mode + " loker " + loker;
+
+        document.getElementById("nik").value = "";
+        document.getElementById("nama").value = "";
+      });
+
+    });
 }
 
 // =====================
@@ -96,7 +108,7 @@ function cekNIK() {
 
   document.getElementById("nama").value = "Mencari...";
 
-  fetch(urlScript + "?nik=" + nik)
+  fetch(urlScript + "?action=ceknik&nik=" + nik)
     .then(res => res.text())
     .then(nama => {
       if (nama.trim() === "") {
