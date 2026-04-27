@@ -28,12 +28,12 @@
 
 <h2>Peminjaman Loker</h2>
 
-
+<h3 id="info"></h3>
 
 <input type="text" id="nik" placeholder="Masukkan NIK" onkeyup="cekNIK()">
 <input type="text" id="nama" placeholder="Nama otomatis" readonly>
 
-<button onclick="kirim()">KIRIM </button>
+<button onclick="kirim()">KIRIM</button>
 
 <h3 id="hasil"></h3>
 
@@ -45,6 +45,7 @@ const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
 const mode = params.get("mode") || "PINJAM";
 
+// tampilkan info loker
 document.getElementById("info").innerText =
   "Loker: " + loker + " (" + mode + ")";
 
@@ -52,13 +53,11 @@ function kirim() {
   const nik = document.getElementById("nik").value;
   const nama = document.getElementById("nama").value;
 
-  // validasi input kosong
-  if (!nik || !nama) {
-    alert("Isi semua data!");
+  if (!nik) {
+    alert("NIK harus diisi!");
     return;
   }
 
-  // 🔴 VALIDASI NIK TIDAK TERDAFTAR
   if (!nama) {
     alert("NIK tidak ditemukan!");
     return;
@@ -77,8 +76,13 @@ function kirim() {
   .then(() => {
     document.getElementById("hasil").innerText =
       "Berhasil " + mode + " loker " + loker;
+
+    // reset form
+    document.getElementById("nik").value = "";
+    document.getElementById("nama").value = "";
   });
 }
+
 function cekNIK() {
   const nik = document.getElementById("nik").value;
 
@@ -89,22 +93,6 @@ function cekNIK() {
     .then(nama => {
       document.getElementById("nama").value = nama;
     });
-}
-  
-  fetch(urlScript, {
-    method: "POST",
-    body: JSON.stringify({
-      nik: nik,
-      nama: nama,
-      loker: loker,
-      status: mode
-    })
-  })
-  .then(res => res.text())
-  .then(() => {
-    document.getElementById("hasil").innerText =
-      "Berhasil " + mode + " loker " + loker;
-  });
 }
 </script>
 
