@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<h2>Peminjaman Loker</h2>
+<h2 id="judul"></h2>
 
 <h3 id="info"></h3>
 
@@ -28,7 +28,13 @@ const url = "https://script.google.com/macros/s/AKfycbxZiPYonWOXiaqhIPMUOiJmsgUZ
 const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
 const mode = params.get("mode") || "PINJAM";
+const judul = document.getElementById("judul");
 
+if (mode === "KEMBALI") {
+  judul.innerText = "Pengembalian Kunci Loker";
+} else {
+  judul.innerText = "Peminjaman kunci Loker";
+}
 document.getElementById("info").innerText = "";
 
 // ===== CEK NIK =====
