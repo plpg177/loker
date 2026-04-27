@@ -1,114 +1,120 @@
 <script>
 const urlScript = "https://script.google.com/macros/s/AKfycbxZiPYonWOXiaqhIPMUOiJmsgUZRMq55ffRR_ARe4szqQJVhmEuUyXtozlN6_KxG30Q/exec";
 
-// ambil parameter
-const params = new URLSearchParams(window.location.search);
-const loker = params.get("loker");
-const mode = params.get("mode") || "PINJAM";
+// tunggu DOM siap
+window.onload = function () {
 
-const btn = document.getElementById("btnProses");
+  const params = new URLSearchParams(window.location.search);
+  const loker = params.get("loker");
+  const mode = params.get("mode") || "PINJAM";
 
-// ubah tombol kalau mode kembali
-if (mode === "KEMBALI") {
-  btn.innerText = "KEMBALIKAN";
-  btn.classList.remove("btn");
-  btn.classList.add("kembali");
-}
+  const btn = document.getElementById("btnProses");
 
-// =====================
-// LOAD STATUS (PINJAM)
-// =====================
-function loadStatus() {
-  if (!loker || mode !== "PINJAM") return;
-
-  fetch(urlScript + "?action=cekloker&loker=" + loker)
-    .then(res => res.text())
-    .then(status => {
-      document.getElementById("statusLoker").innerText =
-        "Status: " + status;
-
-      if (status === "PINJAM") {
-        btn.disabled = true;
-        btn.classList.add("disable");
-      }
-    });
-}
-
-// =====================
-// CEK NIK
-// =====================
-function cekNIK() {
-  const nik = document.getElementById("nik").value;
-
-  if (nik.length < 3) return;
-
-  document.getElementById("nama").value = "Mencari...";
-
-  fetch(urlScript + "?action=ceknik&nik=" + nik)
-    .then(res => res.text())
-    .then(nama => {
-      document.getElementById("nama").value = nama;
-    });
-}
-
-// =====================
-// PROSES
-// =====================
-function proses() {
-  const nik = document.getElementById("nik").value;
-  const nama = document.getElementById("nama").value;
-
-  if (!nik || !nama || nama === "Mencari...") {
-    alert("Isi data dengan benar!");
-    return;
+  // mode kembali
+  if (mode === "KEMBALI") {
+    btn.innerText = "KEMBALIKAN";
+    btn.classList.remove("btn");
+    btn.classList.add("kembali");
   }
 
-  fetch(urlScript, {
-    method: "POST",
-    body: JSON.stringify({
-      nik: nik,
-      nama: nama,
-      loker: loker,
-      status: mode
+  // =====================
+  // LOAD STATUS
+  // =====================
+  function loadStatus() {
+    if (!loker || mode !== "PINJAM") return;
+
+    fetch(urlScript + "?action=cekloker&loker=" + loker)
+      .then(res => res.text())
+      .then(status => {
+        document.getElementById("statusLoker").innerText =
+          "Status: " + status;
+
+        if (status === "PINJAM") {
+          btn.disabled = true;
+          btn.classList.add("disable");
+        }
+      });
+  }
+
+  // =====================
+  // CEK NIK
+  // =====================
+  window.cekNIK = function () {
+    const nik = document.getElementById("nik").value;
+
+    if (nik.length < 3) return;
+
+    document.getElementById("nama").value = "Mencari...";
+
+    fetch(urlScript + "?action=ceknik&nik=" + nik)
+      .then(res => res.text())
+      .then(nama => {
+        document.getElementById("nama").value = nama;
+      });
+  }
+
+  // =====================
+  // PROSES
+  // =====================
+  window.proses = function () {
+    const nik = document.getElementById("nik").value;
+    const nama = document.getElementById("nama").value;
+
+    if (!nik || !nama || nama === "Mencari...") {
+      alert("Isi data dengan benar!");
+      return;
+    }
+
+    fetch(urlScript, {
+      method: "POST",
+      body: JSON.stringify({
+        nik: nik,
+        nama: nama,
+        loker: loker,
+        status: mode
+      })
     })
-  })
-  .then(res => res.text()) // 🔥 ubah ke text dulu
-  .then(res => {
+    .then(res => res.text())
+    .then(res => {
 
-    console.log("RESPONSE:", res); // debug
+      console.log("RESPONSE:", res);
 
-    let data;
-    try {
-      data = JSON.parse(res);
-    } catch (e) {
-      alert("Response error:\n" + res);
-      return;
-    }
+      let data;
+      try {
+        data = JSON.parse(res);
+      } catch (e) {
+        alert("Response bukan JSON:\n" + res);
+        return;
+      }
 
-    if (data.status !== "OK") {
-      alert(data.message);
-      return;
-    }
+      if (data.status !== "OK") {
+        alert(data.message || "Terjadi kesalahan");
+        return;
+      }
 
-    document.getElementById("hasil").innerText =
-      "Berhasil " + data.mode;
+      document.getElementById("hasil").innerText =
+        "Berhasil " + data.mode;
 
-    if (data.mode === "PINJAM") {
-      document.getElementById("infoLoker").innerText =
-        "✔ Loker " + data.loker + " berhasil dipinjam";
-    }
+      // PINJAM
+      if (data.mode === "PINJAM") {
+        document.getElementById("infoLoker").innerText =
+          "✔ Loker " + data.loker + " berhasil dipinjam";
+      }
 
-    if (data.mode === "KEMBALI") {
-      document.getElementById("infoLoker").innerText =
-        "✔ Loker " + data.loker + " berhasil dikembalikan";
-    }
+      // KEMBALI
+      if (data.mode === "KEMBALI") {
+        document.getElementById("infoLoker").innerText =
+          "✔ Loker " + data.loker + " berhasil dikembalikan";
+      }
 
-    document.getElementById("nik").value = "";
-    document.getElementById("nama").value = "";
+      document.getElementById("nik").value = "";
+      document.getElementById("nama").value = "";
 
-    loadStatus();
-  });
-}
-// load awal
-loadStatus();
+      loadStatus();
+    });
+  }
+
+  // load awal
+  loadStatus();
+};
 </script>
