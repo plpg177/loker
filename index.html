@@ -34,6 +34,10 @@ const urlScript = "https://script.google.com/macros/s/AKfycbyqpkR-BVDDvUfKqcanfv
 // ambil dari QR
 const params = new URLSearchParams(window.location.search);
 const loker = params.get("loker");
+const mode = params.get("mode") || "PINJAM";
+if (mode === "KEMBALI") {
+  document.getElementById("pinjam").style.display = "none";
+}  
 
 // =====================
 // CEK STATUS LOKER SAAT LOAD
@@ -91,21 +95,36 @@ function proses(mode) {
   if (!nik || !nama || nama === "Mencari...") {
     alert("Isi data dengan benar!");
     return;
-// 🔴 blok kalau user paksa klik PINJAM
-if (mode === "PINJAM") {
-  fetch(urlScript + "?action=cekloker&loker=" + loker)
-    .then(res => res.json())
-    .then(data => {
+  }
 
-      if (data.status === "PINJAM") {
-        alert("QR ini sudah digunakan untuk peminjaman!");
-        return;
-      }
+  fetch(urlScript, {
+    method: "POST",
+    body: JSON.stringify({
+      nik: nik,
+      nama: nama,
+      loker: loker, // kosong kalau kembali global
+      status: mode
+    })
+  })
+  .then(res => res.text())
+  .then(res => {
 
-      kirimData(mode); // lanjut
-    });
+    if (res === "ERROR:TIDAK_ADA_PINJAMAN") {
+      alert("Anda tidak memiliki loker yang dipinjam!");
+      return;
+    }
 
-  return;
+    if (res === "ERROR:BUKAN_PEMINJAM") {
+      alert("Bukan peminjam!");
+      return;
+    }
+
+    document.getElementById("hasil").innerText =
+      "Berhasil " + mode;
+
+    document.getElementById("nik").value = "";
+    document.getElementById("nama").value = "";
+  });
 }
 
 function kirimData(mode) {
