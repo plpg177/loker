@@ -28,7 +28,7 @@
 
 <h2>Peminjaman Loker</h2>
 
-
+<h3 id="info"></h3>
 
 <input type="text" id="nik" placeholder="Masukkan NIK" onkeyup="cekNIK()">
 <input type="text" id="nama" placeholder="Nama otomatis" readonly>
@@ -49,6 +49,9 @@ const mode = params.get("mode") || "PINJAM";
 document.getElementById("info").innerText =
   "Loker: " + loker + " (" + mode + ")";
 
+// =====================
+// KIRIM DATA
+// =====================
 function kirim() {
   const nik = document.getElementById("nik").value;
   const nama = document.getElementById("nama").value;
@@ -77,12 +80,16 @@ function kirim() {
     document.getElementById("hasil").innerText =
       "Berhasil " + mode + " loker " + loker;
 
+    // reset form
     document.getElementById("nik").value = "";
     document.getElementById("nama").value = "";
   });
 }
 
-  function cekNIK() {
+// =====================
+// CEK NIK
+// =====================
+function cekNIK() {
   const nik = document.getElementById("nik").value;
 
   if (nik.length < 3) return;
@@ -97,38 +104,6 @@ function kirim() {
       } else {
         document.getElementById("nama").value = nama;
       }
-    });
-}
-  
-  fetch(urlScript, {
-    method: "POST",
-    body: JSON.stringify({
-      nik: nik,
-      nama: nama,
-      loker: loker,
-      status: mode
-    })
-  })
-  .then(res => res.text())
-  .then(() => {
-    document.getElementById("hasil").innerText =
-      "Berhasil " + mode + " loker " + loker;
-
-    // reset form
-    document.getElementById("nik").value = "";
-    document.getElementById("nama").value = "";
-  });
-}
-
-function cekNIK() {
-  const nik = document.getElementById("nik").value;
-
-  if (nik.length < 3) return;
-
-  fetch(urlScript + "?nik=" + nik)
-    .then(res => res.text())
-    .then(nama => {
-      document.getElementById("nama").value = nama;
     });
 }
 </script>
