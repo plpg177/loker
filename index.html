@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Peminjaman Loker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+    input {
+      padding: 10px;
+      width: 90%;
+      margin: 10px;
+    }
+    button {
+      padding: 12px;
+      width: 95%;
+      background: green;
+      color: white;
+      border: none;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Peminjaman Loker</h2>
+
+<h3 id="info"></h3>
+
+<input type="text" id="nik" placeholder="Masukkan NIK">
+<input type="text" id="nama" placeholder="Masukkan Nama">
+
+<button onclick="kirim()">KIRIM</button>
+
+<h3 id="hasil"></h3>
+
+<script>
+const urlScript = "https://script.google.com/macros/s/AKfycbyLV92JfgzTMwrbv9tmhNbVBBZmsLuWUHnTPRZpAd-SFH8USazswZX0lC5ORsEPxtPU/exec";
+
+// ambil parameter dari QR
+const params = new URLSearchParams(window.location.search);
+const loker = params.get("loker");
+const mode = params.get("mode") || "PINJAM";
+
+document.getElementById("info").innerText =
+  "Loker: " + loker + " (" + mode + ")";
+
+function kirim() {
+  const nik = document.getElementById("nik").value;
+  const nama = document.getElementById("nama").value;
+
+  if (!nik || !nama) {
+    alert("Isi semua data!");
+    return;
+  }
+
+  fetch(urlScript, {
+    method: "POST",
+    body: JSON.stringify({
+      nik: nik,
+      nama: nama,
+      loker: loker,
+      status: mode
+    })
+  })
+  .then(res => res.text())
+  .then(() => {
+    document.getElementById("hasil").innerText =
+      "Berhasil " + mode + " loker " + loker;
+  });
+}
+</script>
+
+</body>
+</html>
